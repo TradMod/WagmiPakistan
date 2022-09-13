@@ -9,7 +9,7 @@ The unprecedented floods have not only caused serious damage and destruction, th
 diseases. With the winter incoming, the homeless people will be totally helpless.
 
 That's why we have created this Dapp, so anyone from anywhere in the world can donate as low as $5. All the donations will be given to trusted foundations like
-Al-Khidmat & JDC.
+Al-Khidmat, JDC & Tayaba.
 
 How dApp works: [Loom Video especially for Urdu speakers](https://www.loom.com/share/2855f276820e4050ba197315f1dda2bc)
 

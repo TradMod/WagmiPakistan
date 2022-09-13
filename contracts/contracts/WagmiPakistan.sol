@@ -12,7 +12,6 @@ import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
 error WagmiPakistan__NotEnoughEthSent();
-error WagmiPakistan__FailedToSentEther();
 
 contract WagmiPakistan is ERC1155, Ownable, ERC1155Supply {
 
@@ -65,7 +64,7 @@ contract WagmiPakistan is ERC1155, Ownable, ERC1155Supply {
 
     function withdraw() public onlyOwner {
         (bool success, ) = (payable(msg.sender)).call{value: address(this).balance}("");
-        if(!success) {revert WagmiPakistan__FailedToSentEther();}
+        require(success, "Failed To Sent Ether");
     }
 
     function getTotalRaised() external view returns(uint256) {

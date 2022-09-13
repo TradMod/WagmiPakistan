@@ -10,10 +10,11 @@ import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 error WagmiPakistan__NotEnoughEthSent();
 
-contract WagmiPakistan is ERC1155, Ownable, ERC1155Supply {
+contract WagmiPakistan is ERC1155, Ownable, ERC1155Supply, ReentrancyGuard {
 
     uint8 public constant BRONZE = 0;
     uint8 public constant SILVER = 1;
@@ -21,31 +22,35 @@ contract WagmiPakistan is ERC1155, Ownable, ERC1155Supply {
     uint8 public constant DIAMOND = 3;
     uint8 public constant PLATINUM = 4;
 
+    address private immutable contractBeneficiary;
+
     uint256 totalRaised;
 
-    constructor() ERC1155("ipfs://QmRyezUtChrpvH4i4wKEoPngwTFKHuu4YYjZrSg89wvqVq/") {}
+    constructor(address _contractBeneficiary) ERC1155("ipfs://QmRyezUtChrpvH4i4wKEoPngwTFKHuu4YYjZrSg89wvqVq/") {
+        contractBeneficiary = _contractBeneficiary;
+    }
 
-    function mintBronze() public payable  {
+    function mintBronze() public payable nonReentrant {
         if(msg.value != 0.001 * 10**18){revert WagmiPakistan__NotEnoughEthSent();}
         totalRaised = totalRaised + msg.value;
         _mint(msg.sender, BRONZE, 1, "");
     }
-    function mintSteel() public payable {
+    function mintSteel() public payable nonReentrant {
         if(msg.value != 0.002 * 10**18){revert WagmiPakistan__NotEnoughEthSent();}
         totalRaised = totalRaised + msg.value;
         _mint(msg.sender, SILVER, 1, "");
     }
-    function mintGold() public payable {
+    function mintGold() public payable nonReentrant {
         if(msg.value != 0.003 * 10**18){revert WagmiPakistan__NotEnoughEthSent();}
         totalRaised = totalRaised + msg.value;
         _mint(msg.sender, GOLD, 1, "");
     }
-    function mintDiamond() public payable {
+    function mintDiamond() public payable nonReentrant {
         if(msg.value != 0.004 * 10**18){revert WagmiPakistan__NotEnoughEthSent();}
         totalRaised = totalRaised + msg.value;
         _mint(msg.sender, DIAMOND, 1, "");
     }
-    function mintPlatinum() public payable {
+    function mintPlatinum() public payable nonReentrant {
         if(msg.value != 0.005 * 10**18){revert WagmiPakistan__NotEnoughEthSent();}
         totalRaised = totalRaised + msg.value;
         _mint(msg.sender, PLATINUM, 1, "");
@@ -62,8 +67,9 @@ contract WagmiPakistan is ERC1155, Ownable, ERC1155Supply {
             );
     }
 
-    function withdraw() public onlyOwner {
-        (bool success, ) = (payable(msg.sender)).call{value: address(this).balance}("");
+    function withdraw() public nonReentrant {
+        require(msg.sender == owner() || msg.sender == contractBeneficiary, "Only Contract Owner or Contract Beneficiary allowed");
+        (bool success, ) = contractBeneficiary.call{value: address(this).balance}("");
         require(success, "Failed To Sent Ether");
     }
 

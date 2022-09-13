@@ -11,6 +11,9 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
+error WagmiPakistan__NotEnoughEthSent();
+error WagmiPakistan__FailedToSentEther();
+
 contract WagmiPakistan is ERC1155, Ownable, ERC1155Supply {
 
     uint8 public constant BRONZE = 0;
@@ -24,33 +27,32 @@ contract WagmiPakistan is ERC1155, Ownable, ERC1155Supply {
     constructor() ERC1155("ipfs://QmRyezUtChrpvH4i4wKEoPngwTFKHuu4YYjZrSg89wvqVq/") {}
 
     function mintBronze() public payable  {
-        require(msg.value == 0.001 * 10**18, "Not enough ETH sent");
-        _mint(msg.sender, BRONZE, 1, "");
+        if(msg.value != 0.001 * 10**18){revert WagmiPakistan__NotEnoughEthSent();}
         totalRaised = totalRaised + msg.value;
+        _mint(msg.sender, BRONZE, 1, "");
     }
     function mintSteel() public payable {
-        require(msg.value == 0.002 * 10**18, "Not enough ETH sent");
-        _mint(msg.sender, SILVER, 1, "");
+        if(msg.value != 0.002 * 10**18){revert WagmiPakistan__NotEnoughEthSent();}
         totalRaised = totalRaised + msg.value;
+        _mint(msg.sender, SILVER, 1, "");
     }
     function mintGold() public payable {
-        require(msg.value == 0.003 * 10**18, "Not enough ETH sent");
-        _mint(msg.sender, GOLD, 1, "");
+        if(msg.value != 0.003 * 10**18){revert WagmiPakistan__NotEnoughEthSent();}
         totalRaised = totalRaised + msg.value;
+        _mint(msg.sender, GOLD, 1, "");
     }
     function mintDiamond() public payable {
-        require(msg.value == 0.004 * 10**18, "Not enough ETH sent");
-        _mint(msg.sender, DIAMOND, 1, "");
+        if(msg.value != 0.004 * 10**18){revert WagmiPakistan__NotEnoughEthSent();}
         totalRaised = totalRaised + msg.value;
+        _mint(msg.sender, DIAMOND, 1, "");
     }
     function mintPlatinum() public payable {
-        require(msg.value == 0.005 * 10**18, "Not enough ETH sent");
-        _mint(msg.sender, PLATINUM, 1, "");
+        if(msg.value != 0.005 * 10**18){revert WagmiPakistan__NotEnoughEthSent();}
         totalRaised = totalRaised + msg.value;
+        _mint(msg.sender, PLATINUM, 1, "");
     }
 
     function uri(uint256 _id) public view override returns (string memory) {
-        // require(exists(_id), "URI: nonexistent token");
         return
             string(
                 abi.encodePacked(
@@ -62,12 +64,16 @@ contract WagmiPakistan is ERC1155, Ownable, ERC1155Supply {
     }
 
     function withdraw() public onlyOwner {
-        (payable(msg.sender)).transfer(address(this).balance);
+        (bool success, ) = (payable(msg.sender)).call{value: address(this).balance}("");
+        if(!success) {revert WagmiPakistan__FailedToSentEther();}
     }
 
     function getTotalRaised() external view returns(uint256) {
         return totalRaised;
     }
+
+    receive() external payable {}
+    fallback() external payable {}
 
     // The following functions are overrides required by Solidity.
 
